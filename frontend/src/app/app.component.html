@@ -1,119 +1,174 @@
 <div class="main">
-  <div class="wrapper">
-    <h1 class="title">DICTIONARY OF EARTH</h1>
-    <div class="outline"></div>
-    <div align="left">
-      <div class="description">
-        A creative tool for science enthusiasts and scientists to share and learn the definitions of Earth-related scientific and technical terms.
-      </div>
+  <div class="header">
+    <div *ngIf="state === 1 || state === 2" class="text-right">
+      <button type="button" class="btn btn-secondary" (click)="openSignIn()">Sign in</button>
+      <button type="button" class="btn btn-secondary" (click)="openSignUp()">Sign up</button>
     </div>
 
-    <div class="content-wrapper">
-      <div class="left-block">
-        <div class="search">
-          <input (keyup)="onSearchInputChanged(searchInput.value)" placeholder="Type the word..." #searchInput list="suggestions"/>
-          <button (click)="search(searchInput.value)" class="btn-search">Search</button>
-          <datalist id="suggestions">
-            <option *ngFor="let str of searchHelp"><span (click)="search(searchInput.value)">{{str}}</span></option>
-          </datalist>
-        </div>
+    <div *ngIf="state === 3" class="text-right">
+      <button type="button" class="btn btn-secondary" (click)="logOut()">Log out</button>
+      <button type="button" class="btn btn-secondary" (click)="openAddPhoto()">Add photo</button>
+    </div>
+  </div>
 
-        <div class="search-result-container">
-          <div *ngIf="notFound">
-            <span>Results not found</span>
-            <br>
-            <a href="http://google.com">Try to find it in Google</a>
-          </div>
-          <div class="key-result-row">
-            <div class="key-result-container" *ngFor="let sr of searchFirstRow">
-              <span><b>{{sr.key}}</b></span>
-              <div class="value-container">
-                <div class="value" *ngFor="let value of sr.value">
-                  <span>{{value}}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-         <div class="key-result-row">
-           <div class="key-result-container" *ngFor="let sr of searchSecondRow">
-             <span><b>{{sr.key}}</b></span>
-             <div class="value-container">
-               <div class="value" *ngFor="let value of sr.value">
-                 <span>{{value}}</span>
-               </div>
-             </div>
-           </div>
-         </div>
-        </div>
+  <div *ngIf="state === 1" class="first-state">
+    <div class="half">
+      <input type="file" (change)="fileChangedEvent($event)" class="btn-search" />
+    </div>
+    <div>{{noPhotoMessage}}</div>
+    <div>
+      <button type="button" class="btn add-description-btn col-md-6" (click)="detect()">Detect</button>
+    </div>
+  </div>
 
-      </div>
+  <div *ngIf="state === 2" class="second-state">
+    <br>
+    <img [src]="onePagePath"/>
+    <br>
+    <table class="table text-center">
+      <thead>
+        <tr>
+          <th class="text-center">gender</th>
+          <th class="text-center">age</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{onePageGender}}</td>
+          <td>{{onePageAge}}</td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <button type="button" class="btn btn-secondary" (click)="state = 1">Back to upload</button>
+    <button type="button" class="btn add-description-btn" (click)="openSave()">Save result</button>
+  </div>
 
-      <div class="right-block">
-        <div class="most-popular blocks">
-          <h2>Popular searches</h2>
-          <ul>
-            <li *ngFor="let str of topFive">
-              <span (click)="search(str); searchInput.value = str">{{str}}</span>
-            </li>
-          </ul>
-        </div>
-        <div class="add blocks">
-          <h2>Add the words</h2>
-          <span>If you want to add your own words you can add a single word or you can upload file</span>
-          <div class="add-file">
-            <input [(ngModel)]="newKey" placeholder="Type your abbreviation here"/>
-            <button (click)="openModal()" class="btn-search">+</button>
-            <p *ngIf="incorrectInput" class="incorrect-input-message">Please, enter your abbreviation</p>
-          </div>
-
-          <div class="delimiter">
-            <div class="outline"></div> <div class="or">or</div> <div class="outline"></div>
-          </div>
-
-          <div class="upload-file">
-            <button type="button" class="btn-search" (click)="openUpload()">Upload</button>
-          </div>
-        </div>
-      </div>
+  <div *ngIf="state === 3" class="third-state">
+    <div *ngFor="let item of photos" style="display: inline-block; width: 50%">
+      <img [src]="item.path" height="400px"/>
+      <br>
+      <table class="table text-center">
+        <thead>
+        <tr>
+          <th class="text-center">gender</th>
+          <th class="text-center">age</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>{{item.gender}}</td>
+          <td>{{item.age}}</td>
+        </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
 
 <ng-template class="collapse" #content let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">Add custom description</h4>
+    <h4 class="modal-title">Save result for user</h4>
     <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
   <div class="modal-body">
-    <p>Add your description for abbreviation '<span>{{newKey}}</span>'</p>
-    <input class="form-control" [(ngModel)]="newValue"/>
+    <p>You can add this result to your collection</p>
+    <input class="form-control" [(ngModel)]="login" placeholder="Input login"/>
+    <br>
+    <input class="form-control" [(ngModel)]="password" placeholder="Input password"/>
   </div>
   <div class="modal-footer">
     <span style="margin-right: 10px; color: red">{{modalError}}</span>
     <button type="button" class="btn btn-secondary" (click)="c('Close click')">Close</button>
-    <button type="button" class="btn add-description-btn" (click)="addNewDescription(c)">Add</button>
+    <button type="button" class="btn add-description-btn" (click)="savePhoto(c)">Add</button>
   </div>
 </ng-template>
 
 <ng-template class="collapse" #content1 let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">Upload file</h4>
+    <h4 class="modal-title">Sign up</h4>
     <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
   <div class="modal-body">
-    <pre>For success upload your file must be with txt extension and have special structure:
-      NBA    basketball association
-      word + /t + description
-    </pre>
-    <input type="file" (change)="fileChangedEvent($event)" class="btn-search" />
+    <p>Please enter login and password: </p>
+    <input class="form-control" [(ngModel)]="login" placeholder="Input login"/>
+    <br>
+    <input type="password" class="form-control" [(ngModel)]="password" placeholder="Input password"/>
   </div>
   <div class="modal-footer">
-    <span style="margin-right: 10px">{{uploadHelper}}</span>
+    <span style="margin-right: 10px; color: red">{{modalError}}</span>
     <button type="button" class="btn btn-secondary" (click)="c('Close click')">Close</button>
-    <button type="button" class="btn add-description-btn" (click)="upload(c)">Upload</button>
+    <button type="button" class="btn add-description-btn" (click)="signUp(c)">Sign in</button>
+  </div>
+</ng-template>
+
+<ng-template class="collapse" #content2 let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Sign in</h4>
+    <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p>Please enter login and password: </p>
+    <input class="form-control" [(ngModel)]="login" placeholder="Input login"/>
+    <br>
+    <input type="password" class="form-control" [(ngModel)]="password" placeholder="Input password"/>
+  </div>
+  <div class="modal-footer">
+    <span style="margin-right: 10px; color: red">{{modalError}}</span>
+    <button type="button" class="btn btn-secondary" (click)="c('Close click')">Close</button>
+    <button type="button" class="btn add-description-btn" (click)="signIn(c)">Sign in</button>
+  </div>
+</ng-template>
+
+<ng-template class="collapse" #content3 let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Add new photo to collection</h4>
+    <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body text-center">
+    <div *ngIf="modalState === 1" class="first-state">
+      <div class="half">
+        <input type="file" (change)="fileChangedEvent($event)" class="btn-search" />
+      </div>
+      <div>{{noPhotoMessage}}</div>
+      <div>
+        <button type="button" class="btn add-description-btn col-md-6" (click)="detect(true)">Detect</button>
+      </div>
+    </div>
+
+    <div *ngIf="modalState === 2" class="second-state">
+      <br>
+      <img [src]="onePagePath" style="max-width: 80%"/>
+      <br>
+      <table class="table text-center">
+        <thead>
+        <tr>
+          <th class="text-center">gender</th>
+          <th class="text-center">age</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>{{onePageGender}}</td>
+          <td>{{onePageAge}}</td>
+        </tr>
+        </tbody>
+      </table>
+      <br>
+      <button type="button" class="btn btn-secondary" (click)="modalState = 1">Back to upload</button>
+      <button type="button" class="btn add-description-btn" (click)="savePhoto(emptyFunction, mode)">Save result</button>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <span style="margin-right: 10px; color: red">{{modalError}}</span>
+    <button type="button" class="btn btn-secondary" (click)="c('Close click')">Close</button>
   </div>
 </ng-template>

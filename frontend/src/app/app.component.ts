@@ -1,132 +1,151 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { HttpService} from './services/http.service';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
-
-import  { SearchResult } from './search-result';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit{
+export class AppComponent {
 
-  searchFirstRow: SearchResult[]; // first row search result
-  searchSecondRow: SearchResult[]; // second row search result
-
-  notFound: boolean;
-  searchHelp: string[];
-  topFive: string[];
   uploadHelper: string;
-  newKey: string; // new abbreviation
-  newValue: string; // description for new abbreviation
-  modalError : string = ''; // error message for modal
-  incorrectInput: boolean; // incorrect abb input message
+  modalError : string = '';
+  state : number = 1;
+  modalState : number = 1;
+  noPhotoMessage : string = '';
+
+  onePagePath : string = '';
+  onePageGender : string = '';
+  onePageAge : number = 0;
 
   @ViewChild('content') content: any;
   @ViewChild('content1') content1: any;
+  @ViewChild('content2') content2: any;
+  @ViewChild('content3') content3: any;
 
   filesToUpload: Array<File>;
 
+  login : string = '';
+  password : string = '';
 
-  ngOnInit(){
-    this.getTopFive();
-    this.newKey = '';
-    //this.searchResult = [];
-    this.searchFirstRow = [];
-    this.searchSecondRow = [];
-  }
+  photos : any;
 
   constructor (
     private httpService: HttpService,
     private modalService: NgbModal
   ) {}
 
-  addNewDescription (close){
-    if (!this.newValue)
-      return this.modalError = 'Please, input the description of word!';
+  emptyFunction() { }
 
-    this.httpService.saveDescription(this.newKey, this.newValue)
-      .subscribe
-      (
-        result => {close(); this.newKey = '';},
-        error => console.error(error)
-      )
+  detect(mode) {
+    this.noPhotoMessage = '';
+    if (!this.filesToUpload || !this.filesToUpload.length)
+      return this.noPhotoMessage = 'No photo, please choose photo!';
+
+    this.upload(mode);
   }
 
   fileChangedEvent(fileInput: any){
     this.filesToUpload = fileInput.target.files;
   }
 
-  upload(c) {
+  upload(mode) {
     this.uploadHelper = 'Загрузка...';
     this.httpService.makeFileRequest(this.filesToUpload).then((result) => {
-      c();
-      console.log(result);
+      const parseResult = JSON.parse(JSON.parse(JSON.stringify(result)));
+      this.filesToUpload = [];
+      [this.onePagePath, this.onePageAge, this.onePageGender] =
+        [parseResult['path'], parseResult['age'], parseResult['gender']];
+
+      if (mode)
+        this.modalState = 2;
+      else
+        this.state = 2;
     }, (error) => {
+      this.filesToUpload = [];
       console.error(error);
     });
   }
 
-  search(searchInput: string) : void {
-
-    if (!searchInput) return;
-
-    this.httpService.getSearchResult(searchInput)
-      .subscribe(result => {
-          if (result.length > 0){
-            this.notFound = false;
-            this.searchFirstRow = new Array();
-            this.searchSecondRow = new Array();
-            for (let i = 0; i < result.length; i++){
-              if (i % 2 == 0)
-                this.searchFirstRow.push(result[i]);
-
-              else
-                this.searchSecondRow.push(result[i]);
-            }
-            this.getTopFive();
-          }
-          else {
-            this.notFound = true;
-            this.searchSecondRow = [];
-            this.searchFirstRow = [];
-          }
-        }, error => console.error(error))
-  };
-
-  getTopFive() : void {
-    this.httpService.getTopFive()
-      .subscribe
-      (
-        result => this.topFive = result,
-        error => console.error(error)
-      )
-  }
-
-  onSearchInputChanged(value: string){
-    if (value != ""){
-      this.httpService.getSearchHelpData(value)
-        .subscribe
-        (
-          result => this.searchHelp = result,
-          error => console.error(error)
-        )
-    }
-  }
-
-  openModal() {
+  openSave() {
     this.modalError = '';
-    console.log('key: ' + this.newKey);
-    if (this.newKey){
-      this.incorrectInput = false;
-      this.modalService.open(this.content, {size: 'lg'})
-    }
-    else this.incorrectInput = true;
+    [this.login, this.password] = ['',''];
+    this.modalService.open(this.content, {size: 'lg'})
   }
 
-  openUpload() {
-    this.uploadHelper = '';
+  openSignUp() {
+    this.modalError = '';
+    [this.login, this.password] = ['',''];
     this.modalService.open(this.content1, {size: 'lg'})
+  }
+
+  openSignIn() {
+    this.modalError = '';
+    [this.login, this.password] = ['',''];
+    this.modalService.open(this.content2, {size: 'lg'})
+  }
+
+  openAddPhoto() {
+    this.modalError = '';
+    this.modalService.open(this.content3, {size: 'lg'})
+  }
+
+  signIn(close) {
+    if (!this.login || !this.password)
+      return this.modalError = 'Error: no login or password';
+
+    this.httpService.signIn(this.login, this.password)
+      .subscribe((result) => {
+        if (typeof result === 'string')
+          return this.modalError = result;
+
+        this.photos = result;
+        this.state = 3;
+        close();
+      }, (error) => {
+        this.modalError = error;
+      })
+  }
+
+  signUp(close) {
+    if (!this.login || !this.password)
+      return this.modalError = 'Error: no login or password';
+
+    this.httpService.signUp(this.login, this.password)
+      .subscribe((result) => {
+        if (result !== '1')
+          return this.modalError = result;
+
+        close();
+      }, (error) => {
+        this.modalError = error;
+      })
+  }
+
+  logOut() {
+    [this.state, this.photos] = [1,[]];
+    [this.login, this.password] = ['',''];
+  }
+
+  savePhoto(close) {
+    if (!this.login || !this.password)
+      return this.modalError = 'Error: no login or password';
+
+    const photoParams = {
+      oldPath: this.onePagePath,
+      gender: this.onePageGender,
+      age: this.onePageAge
+    };
+
+    this.httpService.savePhoto(this.login, this.password, photoParams)
+      .subscribe((result) => {
+        if (result !== '1')
+          return this.modalError = result;
+
+        close();
+      }, (error) => {
+        this.modalError = error;
+      })
   }
 }

@@ -8,7 +8,7 @@ class IndexRoute extends BaseRoute{
 
     handle() {
         const path = (this.req.url === '/')? 'index.html' : this.req.url;
-        const html = fs.readFileSync(`./frontend/dist/${path}`, 'utf-8');
+        const html = fs.readFileSync(`./frontend/dist/${path}`);
 
         this.res.writeHeader(200, {"Content-Type": "text/html"});
         this.res.write(html);

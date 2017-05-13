@@ -1,3 +1,10 @@
+.half {
+  height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 button {
   cursor: pointer;
 }
@@ -245,12 +252,12 @@ h2{
 
 input:hover, input:focus, input:active {
   outline: 0 !important;
-  border: none !important;
+  /*border: none !important;*/
 }
 
 button:hover, button:focus, button:active {
   outline: 0 !important;
-  border: none !important;
+  /*border: none !important;*/
 }
 
 .content-wrapper{

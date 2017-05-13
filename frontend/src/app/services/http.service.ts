@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import  { Headers, Http, Response, RequestOptions } from '@angular/http';
 
-import { SearchResult } from '../search-result';
-
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch'
@@ -11,7 +9,6 @@ import 'rxjs/add/operator/catch'
 export class HttpService {
 
   private baseUrl = 'http://localhost:8080/';
-
 
   constructor(private http: Http) { }
 
@@ -31,10 +28,6 @@ export class HttpService {
   private extractData (res: Response) {
     let body = res.json();
     return body || { };
-  }
-
-  private extractSearchData (res: Response){
-    return res.json() as SearchResult[];
   }
 
   makeFileRequest(files: Array<File>) {
@@ -58,51 +51,41 @@ export class HttpService {
     });
   }
 
-  getSearchResult(searchParam: string) : Observable<SearchResult[]>{
+  signIn(login : string, password : string) : Observable<any>{
     let headers = new Headers({ 'Content-Type': 'application/json' });
     let options = new RequestOptions({ headers: headers });
 
-    let url = this.baseUrl + 'search';
+    let url = this.baseUrl + 'signIn';
 
     return this.http
-      .post(url, JSON.stringify({ searchParam }), options)
-      .map(this.extractSearchData)
-      .catch(this.handleError);
-  }
-
-  getTopFive() : Observable<string[]>{
-    let headers = new Headers({ 'Content-Type': 'application/json' });
-    let options = new RequestOptions({ headers: headers });
-
-    let url = this.baseUrl + 'top';
-
-    return this.http
-      .get(url, options)
+      .post(url, JSON.stringify({login, password}), options)
       .map(this.extractData)
       .catch(this.handleError);
   }
 
-  getSearchHelpData(searchParam: string) : Observable<string[]> {
+  signUp(login : string, password : string) : Observable<string>{
     let headers = new Headers({ 'Content-Type': 'application/json' });
     let options = new RequestOptions({ headers: headers });
 
-    let url = this.baseUrl + 'get_keys';
+    let url = this.baseUrl + 'signUp';
 
     return this.http
-      .post(url, JSON.stringify({searchParam}), options)
+      .post(url, JSON.stringify({login, password}), options)
       .map(this.extractData)
       .catch(this.handleError);
   }
 
-  saveDescription(key: string, value: string){
-    let headers = new Headers({'Content-Type': 'application/json'});
-    let options = new RequestOptions({headers: headers});
+  savePhoto(login : string, password : string, photoData) : Observable<string> {
+    let headers = new Headers({ 'Content-Type': 'application/json' });
+    let options = new RequestOptions({ headers: headers });
 
-    let url = this.baseUrl + 'add_word';
+    let url = this.baseUrl + 'savePhoto';
+    photoData.login = login;
+    photoData.password = password;
 
     return this.http
-      .post(url, JSON.stringify({key, value}), options)
+      .post(url, JSON.stringify(photoData), options)
       .map(this.extractData)
-      .catch(this.handleError)
+      .catch(this.handleError);
   }
 }

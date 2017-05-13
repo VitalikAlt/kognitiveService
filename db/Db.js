@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
-const searches = require('./models/searches/query');
+const searches = require('./models/users/query');
 
 class Db {
     static connect(url) {
         mongoose.connect(url);
     }
 
-    static get searches() {
+    static get users() {
         return searches;
     }
 }
