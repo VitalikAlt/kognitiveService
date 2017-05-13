@@ -1,0 +1,119 @@
+<div class="main">
+  <div class="wrapper">
+    <h1 class="title">DICTIONARY OF EARTH</h1>
+    <div class="outline"></div>
+    <div align="left">
+      <div class="description">
+        A creative tool for science enthusiasts and scientists to share and learn the definitions of Earth-related scientific and technical terms.
+      </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="left-block">
+        <div class="search">
+          <input (keyup)="onSearchInputChanged(searchInput.value)" placeholder="Type the word..." #searchInput list="suggestions"/>
+          <button (click)="search(searchInput.value)" class="btn-search">Search</button>
+          <datalist id="suggestions">
+            <option *ngFor="let str of searchHelp"><span (click)="search(searchInput.value)">{{str}}</span></option>
+          </datalist>
+        </div>
+
+        <div class="search-result-container">
+          <div *ngIf="notFound">
+            <span>Results not found</span>
+            <br>
+            <a href="http://google.com">Try to find it in Google</a>
+          </div>
+          <div class="key-result-row">
+            <div class="key-result-container" *ngFor="let sr of searchFirstRow">
+              <span><b>{{sr.key}}</b></span>
+              <div class="value-container">
+                <div class="value" *ngFor="let value of sr.value">
+                  <span>{{value}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+         <div class="key-result-row">
+           <div class="key-result-container" *ngFor="let sr of searchSecondRow">
+             <span><b>{{sr.key}}</b></span>
+             <div class="value-container">
+               <div class="value" *ngFor="let value of sr.value">
+                 <span>{{value}}</span>
+               </div>
+             </div>
+           </div>
+         </div>
+        </div>
+
+      </div>
+
+      <div class="right-block">
+        <div class="most-popular blocks">
+          <h2>Popular searches</h2>
+          <ul>
+            <li *ngFor="let str of topFive">
+              <span (click)="search(str); searchInput.value = str">{{str}}</span>
+            </li>
+          </ul>
+        </div>
+        <div class="add blocks">
+          <h2>Add the words</h2>
+          <span>If you want to add your own words you can add a single word or you can upload file</span>
+          <div class="add-file">
+            <input [(ngModel)]="newKey" placeholder="Type your abbreviation here"/>
+            <button (click)="openModal()" class="btn-search">+</button>
+            <p *ngIf="incorrectInput" class="incorrect-input-message">Please, enter your abbreviation</p>
+          </div>
+
+          <div class="delimiter">
+            <div class="outline"></div> <div class="or">or</div> <div class="outline"></div>
+          </div>
+
+          <div class="upload-file">
+            <button type="button" class="btn-search" (click)="openUpload()">Upload</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template class="collapse" #content let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Add custom description</h4>
+    <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p>Add your description for abbreviation '<span>{{newKey}}</span>'</p>
+    <input class="form-control" [(ngModel)]="newValue"/>
+  </div>
+  <div class="modal-footer">
+    <span style="margin-right: 10px; color: red">{{modalError}}</span>
+    <button type="button" class="btn btn-secondary" (click)="c('Close click')">Close</button>
+    <button type="button" class="btn add-description-btn" (click)="addNewDescription(c)">Add</button>
+  </div>
+</ng-template>
+
+<ng-template class="collapse" #content1 let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Upload file</h4>
+    <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <pre>For success upload your file must be with txt extension and have special structure:
+      NBA    basketball association
+      word + /t + description
+    </pre>
+    <input type="file" (change)="fileChangedEvent($event)" class="btn-search" />
+  </div>
+  <div class="modal-footer">
+    <span style="margin-right: 10px">{{uploadHelper}}</span>
+    <button type="button" class="btn btn-secondary" (click)="c('Close click')">Close</button>
+    <button type="button" class="btn add-description-btn" (click)="upload(c)">Upload</button>
+  </div>
+</ng-template>
