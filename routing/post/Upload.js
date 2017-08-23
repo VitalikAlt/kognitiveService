@@ -31,6 +31,7 @@ class UploadRoute extends BaseRoute {
             analyzesGender: true
         }).then((response) => {
             response[0].faceAttributes.age = String(response[0].faceAttributes.age).replace('.', ',');
+            console.log(response[0].faceAttributes)
             this.complete(
                 {
                     path: 'assets/' + filePath,
